@@ -3,12 +3,12 @@ import { Box, Typography, List, ListItem, ListItemIcon, ListItemText } from '@mu
 import { Circle } from '@mui/icons-material'
 
 const categoryLabels = {
-  roads: 'Roads',
-  lighting: 'Lighting',
-  water_supply: 'Water Supply',
-  cleanliness: 'Cleanliness',
-  public_safety: 'Public Safety',
-  obstructions: 'Obstructions'
+  ROADS: 'ROADS',
+  LIGHTING: 'LIGHTING',
+  WATER_SUPPLY: 'WATER SUPPLY',
+  CLEANLINESS: 'CLEANLINESS',
+  PUBLIC_SAFETY: 'PUBLIC SAFETY',
+  OBSTRUCTIONS: 'OBSTRUCTIONS'
 }
 
 const colors = [

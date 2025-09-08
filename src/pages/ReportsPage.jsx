@@ -230,12 +230,12 @@ const ReportsPage = () => {
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
               <MenuItem value="all">All Categories</MenuItem>
-              <MenuItem value="roads">Roads</MenuItem>
-              <MenuItem value="lighting">Lighting</MenuItem>
-              <MenuItem value="water_supply">Water Supply</MenuItem>
-              <MenuItem value="cleanliness">Cleanliness</MenuItem>
-              <MenuItem value="public_safety">Public Safety</MenuItem>
-              <MenuItem value="obstructions">Obstructions</MenuItem>
+              <MenuItem value="ROADS">ROADS</MenuItem>
+              <MenuItem value="LIGHTING">LIGHTING</MenuItem>
+              <MenuItem value="WATER_SUPPLY">WATER SUPPLY</MenuItem>
+              <MenuItem value="CLEANLINESS">CLEANLINESS</MenuItem>
+              <MenuItem value="PUBLIC_SAFETY">PUBLIC SAFETY</MenuItem>
+              <MenuItem value="OBSTRUCTIONS">OBSTRUCTIONS</MenuItem>
             </Select>
           </FormControl>
 

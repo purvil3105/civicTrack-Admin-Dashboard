@@ -54,7 +54,6 @@ const AnalyticsPage = () => {
     pendingReports: 0,
     avgResolutionTime: 0,
     reportsByStatus: {},
-    reportsByPriority: {},
     reportsByCategory: {},
     dailyReports: [],
     topLocations: [],
@@ -63,17 +62,10 @@ const AnalyticsPage = () => {
 
   // Color schemes for charts
   const statusColors = {
-    'new': '#2196f3',
-    'in_progress': '#ff9800', 
+    'pending': '#ff9800',
+    'in_progress': '#2196f3',
     'resolved': '#4caf50',
     'rejected': '#f44336'
-  }
-
-  const priorityColors = {
-    'low': '#4caf50',
-    'medium': '#ff9800',
-    'high': '#f44336',
-    'urgent': '#9c27b0'
   }
 
   const categoryColors = [
@@ -115,7 +107,7 @@ const AnalyticsPage = () => {
   const calculateAnalytics = () => {
     const totalReports = reports.length
     const resolvedReports = reports.filter(r => r.status === 'resolved').length
-    const pendingReports = reports.filter(r => ['new', 'in_progress'].includes(r.status)).length
+    const pendingReports = reports.filter(r => ['pending', 'in_progress'].includes(r.status)).length
 
     // Calculate average resolution time for resolved reports
     const resolvedWithTime = reports.filter(r => r.status === 'resolved' && r.resolved_at)
@@ -130,12 +122,6 @@ const AnalyticsPage = () => {
     // Group by status
     const reportsByStatus = reports.reduce((acc, report) => {
       acc[report.status] = (acc[report.status] || 0) + 1
-      return acc
-    }, {})
-
-    // Group by priority
-    const reportsByPriority = reports.reduce((acc, report) => {
-      acc[report.priority] = (acc[report.priority] || 0) + 1
       return acc
     }, {})
 
@@ -197,7 +183,6 @@ const AnalyticsPage = () => {
       pendingReports,
       avgResolutionTime,
       reportsByStatus,
-      reportsByPriority,
       reportsByCategory,
       dailyReports,
       topLocations,
@@ -264,38 +249,6 @@ const AnalyticsPage = () => {
     }
   }
 
-  const priorityChart = {
-    data: {
-      labels: Object.keys(analytics.reportsByPriority).map(priority => 
-        priority.toUpperCase()
-      ),
-      datasets: [
-        {
-          data: Object.values(analytics.reportsByPriority),
-          backgroundColor: Object.keys(analytics.reportsByPriority).map(priority => priorityColors[priority]),
-          borderRadius: 4
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1
-          }
-        }
-      }
-    }
-  }
-
   const resolutionTrendChart = {
     data: {
       labels: analytics.resolutionTrend.map(d => d.date),
@@ -334,10 +287,10 @@ const AnalyticsPage = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'new':
-        return <PendingActions color="info" />
+      case 'pending':
+        return <PendingActions color="warning" />
       case 'in_progress':
-        return <Schedule color="warning" />
+        return <Schedule color="info" />
       case 'resolved':
         return <CheckCircle color="success" />
       case 'rejected':
@@ -521,21 +474,6 @@ const AnalyticsPage = () => {
             <CardContent>
               <Box sx={{ height: 300 }}>
                 <Doughnut {...statusChart} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Priority Distribution */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardHeader
-              title="Priority Distribution"
-              subheader="Reports categorized by priority level"
-            />
-            <CardContent>
-              <Box sx={{ height: 250 }}>
-                <Bar {...priorityChart} />
               </Box>
             </CardContent>
           </Card>

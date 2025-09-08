@@ -33,12 +33,12 @@ export const REPORT_STATUS = {
   REJECTED: 'rejected'
 }
 
-// Report categories
+// Report categories - updated categories in capital letters
 export const REPORT_CATEGORIES = {
-  ROADS: "roads",
-  LIGHTING: "lighting", 
-  WATER_SUPPLY: "water_supply",
-  CLEANLINESS: "cleanliness",
-  PUBLIC_SAFETY: "public_safety",
-  OBSTRUCTIONS: "obstructions",
+  ROADS: "ROADS",
+  LIGHTING: "LIGHTING", 
+  WATER_SUPPLY: "WATER_SUPPLY",
+  CLEANLINESS: "CLEANLINESS",
+  PUBLIC_SAFETY: "PUBLIC_SAFETY",
+  OBSTRUCTIONS: "OBSTRUCTIONS"
 }
