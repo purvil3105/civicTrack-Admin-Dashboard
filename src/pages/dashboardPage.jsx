@@ -22,7 +22,7 @@ import CategoryDistribution from '../components/CategoryDistribution'
 import InteractiveMap from '../components/InteractiveMap'
 // import CleanupManagement from '../components/CleanupManagement' // Disabled for now
 
-const DashboardPage = () => {
+const dashboardPage = () => {
   const { reports, loading, error } = useReports()
   
   // Memoize stats calculation to prevent unnecessary recalculations
@@ -190,4 +190,4 @@ const DashboardPage = () => {
   )
 }
 
-export default DashboardPage
+export default dashboardPage

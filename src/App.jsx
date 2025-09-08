@@ -6,7 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
+import DashboardPage from './pages/dashboardPage'
 import ReportsPage from './pages/ReportsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 // import './services/reportCleanupService' // Disabled for now
