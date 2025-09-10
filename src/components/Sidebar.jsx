@@ -73,7 +73,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
           }}
         >
           <img 
-            src="/src/assets/app_logo1.png" 
+            src="/app_logo1.png" 
             alt="CivicTrack Logo" 
             style={{ 
               width: '100%', 
