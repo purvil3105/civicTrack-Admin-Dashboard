@@ -43,8 +43,9 @@ const LoginPage = () => {
     setLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
-      
+      const normalizedEmail = email.trim().toLowerCase()
+      const { error } = await signIn(normalizedEmail, password)
+
       if (error) {
         setError(error.message)
       }
@@ -92,14 +93,14 @@ const LoginPage = () => {
                 overflow: 'hidden'
               }}
             >
-              <img 
-                src="/app_logo1.png" 
-                alt="CivicTrack Logo" 
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'contain' 
-                }} 
+              <img
+                src="/app_logo1.png"
+                alt="CivicTrack Logo"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain'
+                }}
               />
             </Box>
             <Typography variant="h4" component="h1" gutterBottom>
@@ -194,17 +195,6 @@ const LoginPage = () => {
           </form>
 
           {/* Demo credentials hint */}
-          <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-            <Typography variant="caption" color="textSecondary" display="block">
-              Demo Credentials:
-            </Typography>
-            <Typography variant="caption" color="textSecondary" display="block">
-              Email: admin@civictrack.com
-            </Typography>
-            <Typography variant="caption" color="textSecondary">
-              Password: admin123
-            </Typography>
-          </Box>
         </CardContent>
       </Card>
     </Box>

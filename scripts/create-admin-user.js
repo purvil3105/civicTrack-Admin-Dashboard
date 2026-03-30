@@ -2,10 +2,14 @@
 // Run this in Node.js environment with Supabase admin credentials
 
 import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
 
-// You need to use your service role key (not anon key) for admin operations
-const supabaseUrl = 'YOUR_SUPABASE_URL'
-const supabaseServiceRoleKey = 'YOUR_SERVICE_ROLE_KEY' // Found in Settings > API
+// Load environment variables from .env
+dotenv.config()
+
+// Get credentials from environment variables
+const supabaseUrl = process.env.VITE_SUPABASE_URL
+const supabaseServiceRoleKey = process.env.VITE_SUPABASE_ANON_KEY
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
@@ -18,7 +22,7 @@ async function createAdminUser() {
   try {
     // Create user in Supabase Auth
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: 'admin@civictrack.com',
+      email: 'admin@issue.com',
       password: 'admin123',
       email_confirm: true // Auto-confirm email
     })
@@ -35,7 +39,7 @@ async function createAdminUser() {
       .from('admin_profiles')
       .insert({
         user_id: authUser.user.id,
-        email: 'admin@civictrack.com',
+        email: 'admin@issuespotter.com',
         full_name: 'System Administrator',
         role: 'admin',
         is_active: true,
