@@ -339,7 +339,7 @@ const AnalyticsPage = () => {
             Analytics Dashboard
           </Typography>
           <Typography variant="body1" color="textSecondary">
-            Comprehensive insights into civic report patterns and performance metrics
+            Comprehensive insights into issue report patterns and performance metrics
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>

@@ -178,7 +178,7 @@ const ReportsPage = () => {
           Reports Management
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Manage and review all civic reports submitted by citizens
+          Manage and review all issue reports submitted by citizens
         </Typography>
       </Box>
 

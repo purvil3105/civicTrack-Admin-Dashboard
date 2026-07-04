@@ -29,7 +29,7 @@ INSERT INTO admins (
     permissions
 ) VALUES (
     '3c58f7bc-4078-488b-a615-132ced9dcf4b', -- Replace with actual user ID from auth.users
-    'CivicTrack Administrator',
+    'issueSpotter Administrator',
     'super_admin',
     (SELECT id FROM departments WHERE name = 'Public Works' LIMIT 1),
     true,

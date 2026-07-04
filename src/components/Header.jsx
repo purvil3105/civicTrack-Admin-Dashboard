@@ -264,7 +264,7 @@ const getPageTitle = () => {
     '/departments': 'Departments',
     '/settings': 'Settings'
   }
-  return titleMap[path] || 'CivicTrack Admin'
+  return titleMap[path] || 'IssueSpotter Admin'
 }
 
 export default Header

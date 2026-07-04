@@ -76,10 +76,10 @@ const dashboardPage = () => {
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: '#1976d2' }}>
-          CivicTrack Dashboard
+          IssueSpotter Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Monitor and manage civic reports across the city
+          Monitor and manage issue reports across the city
         </Typography>
       </Box>
 

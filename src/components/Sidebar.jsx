@@ -74,7 +74,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
         >
           <img 
             src="/app_logo1.png" 
-            alt="CivicTrack Logo" 
+            alt="IssueSpotter Logo" 
             style={{ 
               width: '100%', 
               height: '100%', 
@@ -83,7 +83,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
           />
         </Box>
         <Typography variant="h6" component="h1" gutterBottom>
-          CivicTrack
+          IssueSpotter
         </Typography>
         <Typography variant="caption" color="textSecondary">
           Admin Dashboard
@@ -182,7 +182,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
       {/* Footer */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Typography variant="caption" color="textSecondary">
-          CivicTrack v1.0.0
+          IssueSpotter v1.0.0
         </Typography>
       </Box>
     </Box>

@@ -18,7 +18,7 @@ const ProtectedRoute = ({ children }) => {
       >
         <CircularProgress size={60} />
         <Typography variant="h6" color="textSecondary">
-          Loading CivicTrack Admin...
+          Loading IssueSpotter Admin...
         </Typography>
       </Box>
     )
