@@ -4,7 +4,6 @@ import { LocationOn, Warning } from '@mui/icons-material'
 
 // Simple Maps Dashboard Component that integrates with Google Maps
 const SimpleMapsDashboard = ({ reports = [] }) => {
-  const [map, setMap] = useState(null)
   const [markers, setMarkers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -55,12 +54,16 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
         }
 
         // Default center (you can change this to your city's coordinates)
-        const defaultCenter = { lat: 40.7128, lng: -74.0060 } // New York City
+        const defaultCenter = { lat: 40.7128, lng: -74.006 } // New York City
 
         // If we have reports with coordinates, center on the first one
-        const centerLocation = reports.length > 0 && reports[0].latitude && reports[0].longitude
-          ? { lat: parseFloat(reports[0].latitude), lng: parseFloat(reports[0].longitude) }
-          : defaultCenter
+        const centerLocation =
+          reports.length > 0 && reports[0].latitude && reports[0].longitude
+            ? {
+                lat: parseFloat(reports[0].latitude),
+                lng: parseFloat(reports[0].longitude)
+              }
+            : defaultCenter
 
         const mapInstance = new window.google.maps.Map(mapContainer, {
           zoom: reports.length > 0 ? 15 : 10,
@@ -72,12 +75,10 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
           gestureHandling: 'cooperative'
         })
 
-        setMap(mapInstance)
-
         // Create markers for reports
         const newMarkers = reports
-          .filter(report => report.latitude && report.longitude)
-          .map(report => {
+          .filter((report) => report.latitude && report.longitude)
+          .map((report) => {
             const position = {
               lat: parseFloat(report.latitude),
               lng: parseFloat(report.longitude)
@@ -114,16 +115,24 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
                       ${report.status.replace('_', ' ')}
                     </span>
                   </p>
-                  ${report.description ? `
+                  ${
+                    report.description
+                      ? `
                     <p style="margin: 8px 0 4px 0; color: #333; font-size: 14px; line-height: 1.4;">
                       ${report.description.length > 100 ? report.description.substring(0, 100) + '...' : report.description}
                     </p>
-                  ` : ''}
-                  ${report.address ? `
+                  `
+                      : ''
+                  }
+                  ${
+                    report.address
+                      ? `
                     <p style="margin: 4px 0; color: #666; font-size: 12px;">
                       📍 ${report.address}
                     </p>
-                  ` : ''}
+                  `
+                      : ''
+                  }
                 </div>
               `
             })
@@ -146,7 +155,6 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
           })
           mapInstance.fitBounds(bounds)
         }
-
       } catch (err) {
         console.error('Error initializing map:', err)
         setError('Failed to initialize map')
@@ -158,7 +166,8 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
     if (!window.google && !window.googleMapsLoading) {
       window.googleMapsLoading = true
       const script = document.createElement('script')
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY'
+      const apiKey =
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY'
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
       script.async = true
       script.defer = true
@@ -190,20 +199,23 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
         marker.setMap(null)
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reports])
 
   if (error) {
     return (
-      <Paper sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        bgcolor: 'error.light',
-        color: 'error.contrastText',
-        p: 3
-      }}>
+      <Paper
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'error.light',
+          color: 'error.contrastText',
+          p: 3
+        }}
+      >
         <Warning sx={{ fontSize: 48, mb: 2 }} />
         <Typography variant="h6" gutterBottom>
           Map Loading Error
@@ -220,14 +232,16 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
 
   if (isLoading) {
     return (
-      <Paper sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        p: 3
-      }}>
+      <Paper
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 3
+        }}
+      >
         <CircularProgress size={48} sx={{ mb: 2 }} />
         <Typography variant="h6" gutterBottom>
           Loading Map...
@@ -241,68 +255,78 @@ const SimpleMapsDashboard = ({ reports = [] }) => {
 
   return (
     <Box sx={{ height: '100%', position: 'relative' }}>
-      <div 
-        id="google-map" 
-        style={{ 
-          width: '100%', 
+      <div
+        id="google-map"
+        style={{
+          width: '100%',
           height: '100%',
           borderRadius: '4px'
-        }} 
+        }}
       />
-      
+
       {/* Legend */}
       {reports.length > 1 && (
-        <Paper sx={{ 
-          position: 'absolute',
-          top: 10,
-          right: 10,
-          p: 2,
-          bgcolor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          maxWidth: 200
-        }}>
+        <Paper
+          sx={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            p: 2,
+            bgcolor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            maxWidth: 200
+          }}
+        >
           <Typography variant="subtitle2" gutterBottom>
             Report Status Legend
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#ff9800',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#ff9800',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Pending</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#2196f3',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#2196f3',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">In Progress</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#4caf50',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#4caf50',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Resolved</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#f44336',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#f44336',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Rejected</Typography>
             </Box>
           </Box>

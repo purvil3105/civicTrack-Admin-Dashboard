@@ -23,24 +23,22 @@ import GoogleMapsWrapper from './GoogleMapsWrapper'
 import { useReports } from '../hooks/useData'
 import { formatStatus, formatPriority } from '../utils/helpers'
 
-const ReportsMap = ({ 
-  reports = [], 
-  selectedReport = null, 
-  onReportSelect,
-  filters = {},
-  onFilterChange 
+const ReportsMap = ({
+  reports = [],
+  selectedReport = null,
+  onReportSelect
 }) => {
   const mapRef = useRef(null)
   const markersRef = useRef([])
   const infoWindowRef = useRef(null)
 
   // Default center (you can change this to your city's center)
-  const defaultCenter = { lat: 40.7128, lng: -74.0060 } // New York City
+  const defaultCenter = { lat: 40.7128, lng: -74.006 } // New York City
 
   useEffect(() => {
     if (mapRef.current && window.google && reports.length > 0) {
       // Clear existing markers
-      markersRef.current.forEach(marker => marker.setMap(null))
+      markersRef.current.forEach((marker) => marker.setMap(null))
       markersRef.current = []
 
       const map = new window.google.maps.Map(mapRef.current, {
@@ -63,7 +61,7 @@ const ReportsMap = ({
       reports.forEach((report) => {
         if (report.latitude && report.longitude) {
           const position = { lat: report.latitude, lng: report.longitude }
-          
+
           const marker = new window.google.maps.Marker({
             position,
             map,
@@ -104,25 +102,30 @@ const ReportsMap = ({
       // Fit map to show all markers
       if (reports.length > 0) {
         map.fitBounds(bounds)
-        
+
         // Ensure minimum zoom level
-        const listener = window.google.maps.event.addListener(map, 'idle', () => {
-          if (map.getZoom() > 16) map.setZoom(16)
-          window.google.maps.event.removeListener(listener)
-        })
+        const listener = window.google.maps.event.addListener(
+          map,
+          'idle',
+          () => {
+            if (map.getZoom() > 16) map.setZoom(16)
+            window.google.maps.event.removeListener(listener)
+          }
+        )
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reports, selectedReport])
 
   const getMarkerIcon = (category, priority) => {
     const iconBase = 'https://maps.google.com/mapfiles/ms/icons/'
-    
+
     // Color based on priority
     const priorityColors = {
-      'urgent': 'red',
-      'high': 'orange',
-      'medium': 'yellow',
-      'low': 'green'
+      urgent: 'red',
+      high: 'orange',
+      medium: 'yellow',
+      low: 'green'
     }
 
     const color = priorityColors[priority] || 'blue'
@@ -203,20 +206,20 @@ const ReportsMap = ({
 
   const getStatusColor = (status) => {
     const colors = {
-      'pending': { bg: '#fef3c7', text: '#d97706' },
-      'in_progress': { bg: '#dbeafe', text: '#2563eb' },
-      'resolved': { bg: '#d1fae5', text: '#059669' },
-      'rejected': { bg: '#fee2e2', text: '#dc2626' }
+      pending: { bg: '#fef3c7', text: '#d97706' },
+      in_progress: { bg: '#dbeafe', text: '#2563eb' },
+      resolved: { bg: '#d1fae5', text: '#059669' },
+      rejected: { bg: '#fee2e2', text: '#dc2626' }
     }
     return colors[status] || { bg: '#f3f4f6', text: '#6b7280' }
   }
 
   const getPriorityColor = (priority) => {
     const colors = {
-      'low': { bg: '#f3f4f6', text: '#6b7280' },
-      'medium': { bg: '#fef3c7', text: '#d97706' },
-      'high': { bg: '#fed7aa', text: '#ea580c' },
-      'urgent': { bg: '#fee2e2', text: '#dc2626' }
+      low: { bg: '#f3f4f6', text: '#6b7280' },
+      medium: { bg: '#fef3c7', text: '#d97706' },
+      high: { bg: '#fed7aa', text: '#ea580c' },
+      urgent: { bg: '#fee2e2', text: '#dc2626' }
     }
     return colors[priority] || { bg: '#f3f4f6', text: '#6b7280' }
   }
@@ -241,7 +244,7 @@ const MapsDashboard = () => {
   const [selectedReport, setSelectedReport] = useState(null)
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [filterType]: value === 'all' ? undefined : value
     }))
@@ -255,7 +258,7 @@ const MapsDashboard = () => {
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.data.type === 'viewReport') {
-        const report = reports.find(r => r.id === event.data.reportId)
+        const report = reports.find((r) => r.id === event.data.reportId)
         if (report) {
           setSelectedReport(report)
           // You can add navigation logic here
@@ -270,13 +273,20 @@ const MapsDashboard = () => {
 
   return (
     <Card sx={{ height: '100%' }}>
-      <CardContent sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent
+        sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+      >
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6">
-            Reports Map
-          </Typography>
-          
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2
+          }}
+        >
+          <Typography variant="h6">Reports Map</Typography>
+
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {/* Filters */}
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -320,14 +330,14 @@ const MapsDashboard = () => {
         {/* Stats */}
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Chip label={`${reports.length} Reports`} size="small" />
-          <Chip 
-            label={`${reports.filter(r => r.status === 'pending').length} Pending`} 
-            size="small" 
+          <Chip
+            label={`${reports.filter((r) => r.status === 'pending').length} Pending`}
+            size="small"
             color="warning"
           />
-          <Chip 
-            label={`${reports.filter(r => r.priority === 'urgent').length} Urgent`} 
-            size="small" 
+          <Chip
+            label={`${reports.filter((r) => r.priority === 'urgent').length} Urgent`}
+            size="small"
             color="error"
           />
         </Box>
@@ -339,8 +349,6 @@ const MapsDashboard = () => {
               reports={reports}
               selectedReport={selectedReport}
               onReportSelect={handleReportSelect}
-              filters={filters}
-              onFilterChange={handleFilterChange}
             />
           </GoogleMapsWrapper>
         </Box>

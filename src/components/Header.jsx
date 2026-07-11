@@ -19,15 +19,21 @@ import {
   AccountCircle,
   Logout,
   Settings,
-  Person
+  Person,
+  LightMode,
+  DarkMode
 } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
 import { getInitials, generateAvatarColor } from '../utils/helpers'
+import { useReports } from '../hooks/useData'
+import { useNavigate } from 'react-router-dom'
 
 const Header = ({ handleDrawerToggle, isMobile }) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [notificationsAnchor, setNotificationsAnchor] = useState(null)
   const { user, adminProfile, signOut } = useAuth()
+  const navigate = useNavigate()
+  const { reports } = useReports({ status: 'pending' })
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget)
@@ -50,13 +56,19 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
     await signOut()
   }
 
-  const mockNotifications = [
-    { id: 1, title: 'New pothole report', time: '2 min ago', unread: true },
-    { id: 2, title: 'Street light fixed', time: '1 hour ago', unread: true },
-    { id: 3, title: 'Traffic signal issue', time: '3 hours ago', unread: false }
-  ]
+  const handleSettingsClick = () => {
+    handleProfileMenuClose()
+    navigate('/settings')
+  }
 
-  const unreadCount = mockNotifications.filter(n => n.unread).length
+  const handleProfileClick = () => {
+    handleProfileMenuClose()
+    // For now, we just rely on the info shown in the dropdown menu
+    alert(`Signed in as: ${adminProfile?.full_name || user?.email}`)
+  }
+
+  const recentNotifications = reports ? reports.slice(0, 5) : []
+  const unreadCount = recentNotifications.length
 
   return (
     <AppBar
@@ -103,6 +115,9 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
               color="inherit"
               onClick={handleNotificationsOpen}
               sx={{ color: 'text.primary' }}
+              aria-label="Open notifications menu"
+              aria-expanded={Boolean(notificationsAnchor)}
+              aria-haspopup="true"
             >
               <Badge badgeContent={unreadCount} color="error">
                 <Notifications />
@@ -115,10 +130,15 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
             <IconButton
               onClick={handleProfileMenuOpen}
               sx={{ p: 0, ml: 1 }}
+              aria-label="Open profile menu"
+              aria-expanded={Boolean(anchorEl)}
+              aria-haspopup="true"
             >
               <Avatar
                 sx={{
-                  bgcolor: generateAvatarColor(adminProfile?.full_name || user?.email || ''),
+                  bgcolor: generateAvatarColor(
+                    adminProfile?.full_name || user?.email || ''
+                  ),
                   width: 36,
                   height: 36
                 }}
@@ -146,7 +166,7 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
                 width: 32,
                 height: 32,
                 ml: -0.5,
-                mr: 1,
+                mr: 1
               },
               '&:before': {
                 content: '""',
@@ -158,9 +178,9 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
                 height: 10,
                 bgcolor: 'background.paper',
                 transform: 'translateY(-50%) rotate(45deg)',
-                zIndex: 0,
-              },
-            },
+                zIndex: 0
+              }
+            }
           }}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -174,20 +194,20 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
               {user?.email}
             </Typography>
           </Box>
-          
+
           <Divider />
-          
-          <MenuItem onClick={handleProfileMenuClose}>
+
+          <MenuItem onClick={handleProfileClick}>
             <Person sx={{ mr: 2 }} />
             Profile
           </MenuItem>
-          <MenuItem onClick={handleProfileMenuClose}>
+          <MenuItem onClick={handleSettingsClick}>
             <Settings sx={{ mr: 2 }} />
             Settings
           </MenuItem>
-          
+
           <Divider />
-          
+
           <MenuItem onClick={handleSignOut}>
             <Logout sx={{ mr: 2 }} />
             Sign Out
@@ -217,32 +237,44 @@ const Header = ({ handleDrawerToggle, isMobile }) => {
                 height: 10,
                 bgcolor: 'background.paper',
                 transform: 'translateY(-50%) rotate(45deg)',
-                zIndex: 0,
-              },
-            },
+                zIndex: 0
+              }
+            }
           }}
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography variant="h6">
-              Notifications
-            </Typography>
+            <Typography variant="h6">Notifications</Typography>
           </Box>
-          
-          {mockNotifications.map((notification) => (
-            <MenuItem key={notification.id} onClick={handleNotificationsClose}>
-              <Box sx={{ width: '100%' }}>
-                <Typography variant="body2" sx={{ fontWeight: notification.unread ? 600 : 400 }}>
-                  {notification.title}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  {notification.time}
-                </Typography>
-              </Box>
+
+          {recentNotifications.length === 0 ? (
+            <MenuItem onClick={handleNotificationsClose}>
+              <Typography variant="body2" color="textSecondary">
+                No pending reports
+              </Typography>
             </MenuItem>
-          ))}
-          
+          ) : (
+            recentNotifications.map((report) => (
+              <MenuItem
+                key={report.id}
+                onClick={() => {
+                  handleNotificationsClose()
+                  navigate('/reports')
+                }}
+              >
+                <Box sx={{ width: '100%' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    New: {report.title}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    {new Date(report.created_at).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              </MenuItem>
+            ))
+          )}
+
           <Box sx={{ p: 1, borderTop: 1, borderColor: 'divider' }}>
             <Button fullWidth size="small">
               View All Notifications

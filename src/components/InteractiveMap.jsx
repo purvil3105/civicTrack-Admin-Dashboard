@@ -1,10 +1,23 @@
-import React, { useEffect, useRef, memo } from 'react'
-import { Box, Typography, Paper, Chip, CircularProgress } from '@mui/material'
-import { LocationOn, Warning } from '@mui/icons-material'
-import { 
-  openInGoogleMaps, 
-  getDirectionsToLocation, 
-  copyLocationToClipboard 
+import React, { useEffect, useRef, memo, useState } from 'react'
+import {
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  CircularProgress,
+  ToggleButtonGroup,
+  ToggleButton
+} from '@mui/material'
+import {
+  LocationOn,
+  Warning,
+  Map as MapIcon,
+  BubbleChart as HeatmapIcon
+} from '@mui/icons-material'
+import {
+  openInGoogleMaps,
+  getDirectionsToLocation,
+  copyLocationToClipboard
 } from '../utils/locationUtils'
 
 // Global functions for popup buttons (needed since popup content is HTML string)
@@ -54,9 +67,12 @@ window.copyLocationFromMap = async (lat, lng, address, title) => {
 }
 
 const InteractiveMap = ({ reports = [], height = 400 }) => {
+  const [viewMode, setViewMode] = useState('cluster')
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const markersRef = useRef([])
+  const clusterGroupRef = useRef(null)
+  const heatLayerRef = useRef(null)
 
   const getCategoryIcon = (category) => {
     const iconMap = {
@@ -88,20 +104,24 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
   useEffect(() => {
     // Debug: Log the reports data
     console.log('InteractiveMap received reports:', reports)
-    const reportsWithCoords = reports.filter(r => r.latitude && r.longitude)
+    const reportsWithCoords = reports.filter((r) => r.latitude && r.longitude)
     console.log('Reports with coordinates:', reportsWithCoords)
-    
+
     // If no coordinates, add test data for demonstration
     let testReports = [...reports]
     if (reportsWithCoords.length === 0 && reports.length > 0) {
-      console.log('No coordinates found, adding test coordinates for demonstration')
-      testReports = reports.map((report, index) => ({
-        ...report,
-        latitude: 40.7128 + (index * 0.01), // NYC area with slight offsets
-        longitude: -74.0060 + (index * 0.01)
-      })).slice(0, 3) // Only first 3 for demo
+      console.log(
+        'No coordinates found, adding test coordinates for demonstration'
+      )
+      testReports = reports
+        .map((report, index) => ({
+          ...report,
+          latitude: 40.7128 + index * 0.01, // NYC area with slight offsets
+          longitude: -74.006 + index * 0.01
+        }))
+        .slice(0, 3) // Only first 3 for demo
     }
-    
+
     // Load Leaflet dynamically
     const loadLeaflet = async () => {
       try {
@@ -118,7 +138,46 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
           const script = document.createElement('script')
           script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
           document.head.appendChild(script)
-          
+
+          await new Promise((resolve, reject) => {
+            script.onload = resolve
+            script.onerror = reject
+          })
+        }
+
+        // Import Leaflet MarkerCluster CSS and JS
+        if (!document.querySelector('link[href*="MarkerCluster.css"]')) {
+          const link1 = document.createElement('link')
+          link1.rel = 'stylesheet'
+          link1.href =
+            'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css'
+          document.head.appendChild(link1)
+
+          const link2 = document.createElement('link')
+          link2.rel = 'stylesheet'
+          link2.href =
+            'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css'
+          document.head.appendChild(link2)
+        }
+
+        if (window.L && !window.L.markerClusterGroup) {
+          const script = document.createElement('script')
+          script.src =
+            'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js'
+          document.head.appendChild(script)
+
+          await new Promise((resolve, reject) => {
+            script.onload = resolve
+            script.onerror = reject
+          })
+        }
+
+        if (window.L && !window.L.heatLayer) {
+          const script = document.createElement('script')
+          script.src =
+            'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js'
+          document.head.appendChild(script)
+
           await new Promise((resolve, reject) => {
             script.onload = resolve
             script.onerror = reject
@@ -128,33 +187,54 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
         // Initialize map
         if (mapRef.current && window.L && !mapInstanceRef.current) {
           // Default center (you can change this to your city's coordinates)
-          let center = [40.7128, -74.0060] // New York City
+          let center = [40.7128, -74.006] // New York City
           let zoom = 10
 
           // If we have reports with coordinates, center on the first one
-          const reportsWithTestCoords = testReports.filter(r => r.latitude && r.longitude)
+          const reportsWithTestCoords = testReports.filter(
+            (r) => r.latitude && r.longitude
+          )
           if (reportsWithTestCoords.length > 0) {
             const firstReport = reportsWithTestCoords[0]
-            center = [parseFloat(firstReport.latitude), parseFloat(firstReport.longitude)]
+            center = [
+              parseFloat(firstReport.latitude),
+              parseFloat(firstReport.longitude)
+            ]
             zoom = reportsWithTestCoords.length === 1 ? 15 : 12
           }
 
           // Create map
-          mapInstanceRef.current = window.L.map(mapRef.current).setView(center, zoom)
+          mapInstanceRef.current = window.L.map(mapRef.current).setView(
+            center,
+            zoom
+          )
 
           // Add tile layer
-          window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-          }).addTo(mapInstanceRef.current)
+          window.L.tileLayer(
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+              attribution: '© OpenStreetMap contributors'
+            }
+          ).addTo(mapInstanceRef.current)
 
-          // Clear existing markers
-          markersRef.current.forEach(marker => {
-            mapInstanceRef.current.removeLayer(marker)
-          })
+          // Clear existing layers
+          if (clusterGroupRef.current) {
+            mapInstanceRef.current.removeLayer(clusterGroupRef.current)
+          }
+          if (heatLayerRef.current) {
+            mapInstanceRef.current.removeLayer(heatLayerRef.current)
+          }
+
           markersRef.current = []
+          clusterGroupRef.current = window.L.markerClusterGroup({
+            chunkedLoading: true,
+            maxClusterRadius: 50
+          })
+
+          const heatData = []
 
           // Add markers for reports
-          reportsWithTestCoords.forEach(report => {
+          reportsWithTestCoords.forEach((report) => {
             const lat = parseFloat(report.latitude)
             const lng = parseFloat(report.longitude)
 
@@ -183,7 +263,8 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
               })
 
               const marker = window.L.marker([lat, lng], { icon: customIcon })
-                .addTo(mapInstanceRef.current)
+
+              heatData.push([lat, lng, 1])
 
               // Create popup content with location actions
               const popupContent = `
@@ -208,17 +289,25 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
                       ${report.status?.replace('_', ' ')}
                     </span>
                   </p>
-                  ${report.description ? `
+                  ${
+                    report.description
+                      ? `
                     <p style="margin: 8px 0 4px 0; color: #333; font-size: 14px; line-height: 1.4;">
                       <strong>Description:</strong><br>
                       ${report.description.length > 100 ? report.description.substring(0, 100) + '...' : report.description}
                     </p>
-                  ` : ''}
-                  ${report.address ? `
+                  `
+                      : ''
+                  }
+                  ${
+                    report.address
+                      ? `
                     <p style="margin: 4px 0; color: #666; font-size: 12px;">
                       📍 ${report.address}
                     </p>
-                  ` : ''}
+                  `
+                      : ''
+                  }
                   <div style="margin: 8px 0 4px 0; font-size: 12px; color: #888;">
                     <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}
                   </div>
@@ -269,8 +358,24 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
               })
 
               markersRef.current.push(marker)
+              clusterGroupRef.current.addLayer(marker)
             }
           })
+
+          // Create heat layer
+          heatLayerRef.current = window.L.heatLayer(heatData, {
+            radius: 25,
+            blur: 15,
+            maxZoom: 15,
+            gradient: { 0.4: 'blue', 0.6: 'lime', 0.8: 'yellow', 1: 'red' }
+          })
+
+          // Add layer based on viewMode
+          if (viewMode === 'cluster') {
+            mapInstanceRef.current.addLayer(clusterGroupRef.current)
+          } else {
+            mapInstanceRef.current.addLayer(heatLayerRef.current)
+          }
 
           // Fit bounds if multiple markers
           if (markersRef.current.length > 1) {
@@ -292,41 +397,44 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
         mapInstanceRef.current = null
       }
     }
-  }, [reports])
+  }, [reports, viewMode])
 
-  const reportsWithLocation = reports.filter(r => r.latitude && r.longitude)
+  const reportsWithLocation = reports.filter((r) => r.latitude && r.longitude)
 
   // Show message if no real coordinates but add test coordinates for demo
   if (reportsWithLocation.length === 0 && reports.length > 0) {
     return (
       <Box sx={{ height, position: 'relative' }}>
-        <div 
+        <div
           ref={mapRef}
-          style={{ 
-            width: '100%', 
+          style={{
+            width: '100%',
             height: '100%',
             borderRadius: '4px',
             overflow: 'hidden'
-          }} 
+          }}
         />
-        
+
         {/* Demo Notice */}
-        <Paper sx={{ 
-          position: 'absolute',
-          top: 10,
-          left: 10,
-          right: 10,
-          p: 2,
-          bgcolor: 'rgba(255, 243, 224, 0.95)',
-          border: '1px solid',
-          borderColor: 'warning.main',
-          zIndex: 1000
-        }}>
+        <Paper
+          sx={{
+            position: 'absolute',
+            top: 10,
+            left: 10,
+            right: 10,
+            p: 2,
+            bgcolor: 'rgba(255, 243, 224, 0.95)',
+            border: '1px solid',
+            borderColor: 'warning.main',
+            zIndex: 1000
+          }}
+        >
           <Typography variant="body2" color="warning.dark">
-            <strong>Demo Mode:</strong> No GPS coordinates found in reports. Showing sample locations for demonstration.
+            <strong>Demo Mode:</strong> No GPS coordinates found in reports.
+            Showing sample locations for demonstration.
           </Typography>
         </Paper>
-        
+
         {/* Report Count Badge */}
         <Chip
           label={`${reports.length} Report${reports.length !== 1 ? 's' : ''} (demo locations)`}
@@ -345,16 +453,18 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
 
   if (reportsWithLocation.length === 0) {
     return (
-      <Paper sx={{ 
-        height, 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center', 
-        justifyContent: 'center',
-        bgcolor: 'grey.50',
-        border: '2px dashed',
-        borderColor: 'grey.300'
-      }}>
+      <Paper
+        sx={{
+          height,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'grey.50',
+          border: '2px dashed',
+          borderColor: 'grey.300'
+        }}
+      >
         <Box sx={{ textAlign: 'center' }}>
           <LocationOn sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -370,70 +480,107 @@ const InteractiveMap = ({ reports = [], height = 400 }) => {
 
   return (
     <Box sx={{ height, position: 'relative' }}>
-      <div 
+      <div
         ref={mapRef}
-        style={{ 
-          width: '100%', 
+        style={{
+          width: '100%',
           height: '100%',
           borderRadius: '4px',
           overflow: 'hidden'
-        }} 
+        }}
       />
-      
-      {/* Legend */}
-      {reports.length > 1 && (
-        <Paper sx={{ 
+
+      {/* View Toggle */}
+      <Paper
+        sx={{
           position: 'absolute',
           top: 10,
-          right: 10,
-          p: 2,
-          bgcolor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          maxWidth: 200,
-          zIndex: 1000
-        }}>
+          left: 50,
+          zIndex: 1000,
+          bgcolor: 'rgba(255, 255, 255, 0.95)'
+        }}
+      >
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(e, newMode) => newMode && setViewMode(newMode)}
+          size="small"
+        >
+          <ToggleButton value="cluster">
+            <MapIcon fontSize="small" sx={{ mr: 1 }} />
+            Pins
+          </ToggleButton>
+          <ToggleButton value="heatmap">
+            <HeatmapIcon fontSize="small" sx={{ mr: 1 }} />
+            Heatmap
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Paper>
+
+      {/* Legend */}
+      {reports.length > 1 && viewMode === 'cluster' && (
+        <Paper
+          sx={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            p: 2,
+            bgcolor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            maxWidth: 200,
+            zIndex: 1000
+          }}
+        >
           <Typography variant="subtitle2" gutterBottom>
             Report Status Legend
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#ff9800',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#ff9800',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Pending</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#2196f3',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#2196f3',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">In Progress</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#4caf50',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#4caf50',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Resolved</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ 
-                width: 12, 
-                height: 12, 
-                borderRadius: '50%', 
-                bgcolor: '#f44336',
-                border: '2px solid white'
-              }} />
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: '#f44336',
+                  border: '2px solid white'
+                }}
+              />
               <Typography variant="caption">Rejected</Typography>
             </Box>
           </Box>

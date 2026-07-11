@@ -16,7 +16,8 @@ import {
   Dashboard,
   ReportProblem,
   Analytics,
-  Settings
+  Settings,
+  History
 } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
 import { getInitials, generateAvatarColor } from '../utils/helpers'
@@ -36,6 +37,11 @@ const navigationItems = [
     title: 'Analytics',
     path: '/analytics',
     icon: Analytics
+  },
+  {
+    title: 'Audit Logs',
+    path: '/audit-logs',
+    icon: History
   },
   {
     title: 'Settings',
@@ -72,14 +78,14 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
             overflow: 'hidden'
           }}
         >
-          <img 
-            src="/app_logo1.png" 
-            alt="IssueSpotter Logo" 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain' 
-            }} 
+          <img
+            src="/app_logo1.png"
+            alt="IssueSpotter Logo"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
           />
         </Box>
         <Typography variant="h6" component="h1" gutterBottom>
@@ -98,7 +104,9 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Avatar
               sx={{
-                bgcolor: generateAvatarColor(adminProfile.full_name || user?.email || ''),
+                bgcolor: generateAvatarColor(
+                  adminProfile.full_name || user?.email || ''
+                ),
                 width: 40,
                 height: 40
               }}
@@ -114,7 +122,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
               </Typography>
             </Box>
           </Box>
-          
+
           {adminProfile.role && (
             <Chip
               label={adminProfile.role.replace('_', ' ').toUpperCase()}
@@ -124,7 +132,7 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
               sx={{ mb: 1 }}
             />
           )}
-          
+
           {adminProfile.departments && (
             <Typography variant="caption" color="textSecondary" display="block">
               {adminProfile.departments.name}
@@ -146,6 +154,8 @@ const Sidebar = ({ drawerWidth, mobileOpen, handleDrawerToggle, isMobile }) => {
               <ListItem key={item.title} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
                   onClick={() => handleNavigation(item.path)}
+                  aria-label={`Navigate to ${item.title}`}
+                  aria-current={isActive ? 'page' : undefined}
                   sx={{
                     borderRadius: 2,
                     py: 1.5,

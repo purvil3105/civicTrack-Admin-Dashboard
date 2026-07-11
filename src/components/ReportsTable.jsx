@@ -17,8 +17,10 @@ import {
   MenuItem,
   Tooltip,
   Skeleton,
-  Card
+  Card,
+  Checkbox
 } from '@mui/material'
+import { usePreferences } from '../hooks/usePreferences'
 import {
   Visibility,
   LocationOn,
@@ -53,188 +55,239 @@ const getCategoryIcon = (category) => {
     water_supply: '💧',
     cleanliness: '🧹',
     public_safety: '🛡️',
-    obstructions: '⚠️'
+    obstruction: '⚠️'
   }
   return iconMap[category] || '📋'
 }
 
-const getPriorityColor = (priority) => {
-  switch (priority) {
-    case 'urgent':
-      return '#dc2626'
-    case 'high':
-      return '#ea580c'
-    case 'medium':
-      return '#d97706'
-    case 'low':
-      return '#6b7280'
-    default:
-      return '#6b7280'
-  }
+const getSLAStatus = (createdAt, status, warningDays, breachDays) => {
+  if (status === 'resolved' || status === 'rejected') return null
+  const daysPending = (new Date() - new Date(createdAt)) / (1000 * 60 * 60 * 24)
+  if (daysPending >= breachDays) return 'breached'
+  if (daysPending >= warningDays) return 'warning'
+  return 'ok'
 }
 
-const StatusActionMenu = memo(({ report, onUpdateStatus, anchorEl, open, onClose }) => {
-  const handleStatusUpdate = (newStatus) => {
-    onUpdateStatus(report.id, newStatus)
-    onClose()
+const StatusActionMenu = memo(
+  ({ report, onUpdateStatus, anchorEl, open, onClose }) => {
+    const handleStatusUpdate = (newStatus) => {
+      onUpdateStatus(report.id, newStatus)
+      onClose()
+    }
+
+    const statusOptions = [
+      {
+        status: 'pending',
+        label: 'Pending',
+        icon: <Schedule />,
+        color: '#ff9800'
+      },
+      {
+        status: 'in_progress',
+        label: 'In Progress',
+        icon: <PlayArrow />,
+        color: '#2196f3'
+      },
+      {
+        status: 'resolved',
+        label: 'Resolved',
+        icon: <CheckCircle />,
+        color: '#4caf50'
+      },
+      {
+        status: 'rejected',
+        label: 'Rejected',
+        icon: <Cancel />,
+        color: '#f44336'
+      }
+    ]
+
+    return (
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={onClose}
+        PaperProps={{
+          sx: { minWidth: 200 }
+        }}
+      >
+        {statusOptions
+          .filter((option) => option.status !== report.status) // Don't show current status
+          .map((option) => (
+            <MenuItem
+              key={option.status}
+              onClick={() => handleStatusUpdate(option.status)}
+              sx={{ gap: 1 }}
+            >
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: option.color
+                }}
+              />
+              {option.icon}
+              {option.label}
+            </MenuItem>
+          ))}
+      </Menu>
+    )
   }
+)
 
-  const statusOptions = [
-    { status: 'pending', label: 'Pending', icon: <Schedule />, color: '#ff9800' },
-    { status: 'in_progress', label: 'In Progress', icon: <PlayArrow />, color: '#2196f3' },
-    { status: 'resolved', label: 'Resolved', icon: <CheckCircle />, color: '#4caf50' },
-    { status: 'rejected', label: 'Rejected', icon: <Cancel />, color: '#f44336' }
-  ]
+const ReportRow = memo(
+  ({
+    report,
+    onViewReport,
+    onUpdateStatus,
+    selected,
+    onSelect,
+    slaWarningDays,
+    slaBreachDays
+  }) => {
+    const [anchorEl, setAnchorEl] = useState(null)
+    const menuOpen = Boolean(anchorEl)
 
-  return (
-    <Menu
-      anchorEl={anchorEl}
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: { minWidth: 200 }
-      }}
-    >
-      {statusOptions
-        .filter(option => option.status !== report.status) // Don't show current status
-        .map((option) => (
-          <MenuItem 
-            key={option.status}
-            onClick={() => handleStatusUpdate(option.status)}
-            sx={{ gap: 1 }}
-          >
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: option.color
-              }}
-            />
-            {option.icon}
-            {option.label}
-          </MenuItem>
-        ))}
-    </Menu>
-  )
-})
+    const handleMenuClick = (event) => {
+      setAnchorEl(event.currentTarget)
+    }
 
-const ReportRow = memo(({ report, onViewReport, onUpdateStatus }) => {
-  const [anchorEl, setAnchorEl] = useState(null)
-  const menuOpen = Boolean(anchorEl)
+    const handleMenuClose = () => {
+      setAnchorEl(null)
+    }
 
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+    const sla = getSLAStatus(
+      report.created_at,
+      report.status,
+      slaWarningDays,
+      slaBreachDays
+    )
+    let rowStyle = { '&:hover': { backgroundColor: 'action.hover' } }
 
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
+    if (sla === 'breached') {
+      rowStyle.backgroundColor = '#ffebee'
+      rowStyle.borderLeft = '4px solid #f44336'
+    } else if (sla === 'warning') {
+      rowStyle.backgroundColor = '#fff8e1'
+      rowStyle.borderLeft = '4px solid #ffb300'
+    }
 
-  return (
-    <TableRow 
-      sx={{ 
-        '&:hover': { 
-          backgroundColor: 'action.hover' 
-        }
-      }}
-    >
-      <TableCell>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ width: 40, height: 40, fontSize: '1rem' }}>
-            {getCategoryIcon(report.category)}
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle2" noWrap sx={{ maxWidth: 200, fontWeight: 600 }}>
-              {report.title}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              ID: {report.id.slice(0, 8)}...
-            </Typography>
-          </Box>
-        </Box>
-      </TableCell>
-
-      <TableCell>
-        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-          {report.category.replace('_', ' ')}
-        </Typography>
-      </TableCell>
-
-      <TableCell>
-        <Chip
-          label={report.status.replace('_', ' ')}
-          color={getStatusColor(report.status)}
-          size="small"
-          sx={{ textTransform: 'capitalize', fontWeight: 500 }}
-        />
-      </TableCell>
-
-      <TableCell>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Schedule fontSize="small" color="action" />
-          <Typography variant="caption">
-            {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
-          </Typography>
-        </Box>
-      </TableCell>
-
-      <TableCell>
-        {report.address ? (
-          <Tooltip title={report.address}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <LocationOn fontSize="small" color="action" />
-              <Typography variant="caption" noWrap sx={{ maxWidth: 150 }}>
-                {report.address}
+    return (
+      <TableRow sx={rowStyle}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            color="primary"
+            checked={selected}
+            onChange={() => onSelect(report.id)}
+          />
+        </TableCell>
+        <TableCell>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ width: 40, height: 40, fontSize: '1rem' }}>
+              {getCategoryIcon(report.category)}
+            </Avatar>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                noWrap
+                sx={{ maxWidth: 200, fontWeight: 600 }}
+              >
+                {report.title}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ID: {report.id.slice(0, 8)}...
               </Typography>
             </Box>
-          </Tooltip>
-        ) : (
-          <Typography variant="caption" color="text.secondary">
-            No address
+          </Box>
+        </TableCell>
+
+        <TableCell>
+          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
+            {report.category.replace('_', ' ')}
           </Typography>
-        )}
-      </TableCell>
+        </TableCell>
 
-      <TableCell>
-        {report.image_url && (
-          <Tooltip title="Has image attachment">
-            <ImageIcon fontSize="small" color="primary" />
-          </Tooltip>
-        )}
-      </TableCell>
+        <TableCell>
+          <Chip
+            label={report.status.replace('_', ' ')}
+            color={getStatusColor(report.status)}
+            size="small"
+            sx={{ textTransform: 'capitalize', fontWeight: 500 }}
+          />
+        </TableCell>
 
-      <TableCell align="right">
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Tooltip title="View Details">
-            <IconButton size="small" onClick={() => onViewReport(report)}>
-              <Visibility fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          
-          <Tooltip title="Update Status">
-            <IconButton size="small" onClick={handleMenuClick}>
-              <MoreVert fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <TableCell>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Schedule fontSize="small" color="action" />
+            <Typography variant="caption">
+              {formatDistanceToNow(new Date(report.created_at), {
+                addSuffix: true
+              })}
+            </Typography>
+          </Box>
+        </TableCell>
 
-        <StatusActionMenu
-          report={report}
-          onUpdateStatus={onUpdateStatus}
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={handleMenuClose}
-        />
-      </TableCell>
-    </TableRow>
-  )
-})
+        <TableCell>
+          {report.address ? (
+            <Tooltip title={report.address}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOn fontSize="small" color="action" />
+                <Typography variant="caption" noWrap sx={{ maxWidth: 150 }}>
+                  {report.address}
+                </Typography>
+              </Box>
+            </Tooltip>
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              No address
+            </Typography>
+          )}
+        </TableCell>
+
+        <TableCell>
+          {report.image_url && (
+            <Tooltip title="Has image attachment">
+              <ImageIcon fontSize="small" color="primary" />
+            </Tooltip>
+          )}
+        </TableCell>
+
+        <TableCell align="right">
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <Tooltip title="View Details">
+              <IconButton size="small" onClick={() => onViewReport(report)}>
+                <Visibility fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Update Status">
+              <IconButton size="small" onClick={handleMenuClick}>
+                <MoreVert fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          <StatusActionMenu
+            report={report}
+            onUpdateStatus={onUpdateStatus}
+            anchorEl={anchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+          />
+        </TableCell>
+      </TableRow>
+    )
+  }
+)
 
 const LoadingSkeleton = () => (
   <>
     {[...Array(5)].map((_, index) => (
       <TableRow key={index}>
+        <TableCell padding="checkbox">
+          <Skeleton variant="rectangular" width={24} height={24} />
+        </TableCell>
         <TableCell>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Skeleton variant="circular" width={40} height={40} />
@@ -244,20 +297,41 @@ const LoadingSkeleton = () => (
             </Box>
           </Box>
         </TableCell>
-        <TableCell><Skeleton variant="text" width={80} /></TableCell>
-        <TableCell><Skeleton variant="rectangular" width={80} height={24} /></TableCell>
-        <TableCell><Skeleton variant="text" width={100} /></TableCell>
-        <TableCell><Skeleton variant="text" width={120} /></TableCell>
-        <TableCell><Skeleton variant="circular" width={24} height={24} /></TableCell>
-        <TableCell><Skeleton variant="text" width={60} /></TableCell>
+        <TableCell>
+          <Skeleton variant="text" width={80} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="rectangular" width={80} height={24} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width={100} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width={120} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="circular" width={24} height={24} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width={60} />
+        </TableCell>
       </TableRow>
     ))}
   </>
 )
 
-const ReportsTable = ({ reports, loading, onViewReport, onUpdateStatus }) => {
+const ReportsTable = ({
+  reports,
+  loading,
+  onViewReport,
+  onUpdateStatus,
+  selected = [],
+  onSelect,
+  onSelectAll
+}) => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+  const { slaWarningDays, slaBreachDays } = usePreferences()
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -280,7 +354,8 @@ const ReportsTable = ({ reports, loading, onViewReport, onUpdateStatus }) => {
           No Reports Found
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          No reports match your current filters. Try adjusting your search criteria.
+          No reports match your current filters. Try adjusting your search
+          criteria.
         </Typography>
       </Card>
     )
@@ -292,13 +367,34 @@ const ReportsTable = ({ reports, loading, onViewReport, onUpdateStatus }) => {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  color="primary"
+                  indeterminate={
+                    selected.length > 0 &&
+                    selected.length < paginatedReports.length
+                  }
+                  checked={
+                    paginatedReports.length > 0 &&
+                    selected.length === paginatedReports.length
+                  }
+                  onChange={(e) =>
+                    onSelectAll(
+                      e.target.checked,
+                      paginatedReports.map((r) => r.id)
+                    )
+                  }
+                />
+              </TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Report</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 600 }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -311,6 +407,10 @@ const ReportsTable = ({ reports, loading, onViewReport, onUpdateStatus }) => {
                   report={report}
                   onViewReport={onViewReport}
                   onUpdateStatus={onUpdateStatus}
+                  selected={selected.includes(report.id)}
+                  onSelect={onSelect}
+                  slaWarningDays={slaWarningDays}
+                  slaBreachDays={slaBreachDays}
                 />
               ))
             )}

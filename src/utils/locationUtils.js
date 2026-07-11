@@ -4,35 +4,32 @@
 
 /**
  * Opens location in Google Maps (mobile app or web)
- * @param {number} latitude 
- * @param {number} longitude 
+ * @param {number} latitude
+ * @param {number} longitude
  * @param {string} label - Optional label for the location
  */
-export const openInGoogleMaps = (latitude, longitude, label = '') => {
+export const openInGoogleMaps = (latitude, longitude) => {
   const lat = parseFloat(latitude)
   const lng = parseFloat(longitude)
-  
+
   if (isNaN(lat) || isNaN(lng)) {
     console.error('Invalid coordinates provided')
     return false
   }
 
   // For mobile devices, try to open in Google Maps app first
-  const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  
+  const isMobile =
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+
   let url
   if (isMobile) {
     // Try Google Maps app first, fallback to web
     url = `https://maps.google.com/maps?q=${lat},${lng}&ll=${lat},${lng}&z=17`
-    if (label) {
-      url = `https://maps.google.com/maps?q=${encodeURIComponent(label)}@${lat},${lng}&ll=${lat},${lng}&z=17`
-    }
   } else {
     // Desktop - open in Google Maps web
     url = `https://www.google.com/maps/@${lat},${lng},17z`
-    if (label) {
-      url = `https://www.google.com/maps/search/${encodeURIComponent(label)}/@${lat},${lng},17z`
-    }
   }
 
   window.open(url, '_blank')
@@ -41,23 +38,20 @@ export const openInGoogleMaps = (latitude, longitude, label = '') => {
 
 /**
  * Opens location in Google Maps with directions from current location
- * @param {number} latitude 
- * @param {number} longitude 
- * @param {string} label 
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} label
  */
-export const getDirectionsToLocation = (latitude, longitude, label = '') => {
+export const getDirectionsToLocation = (latitude, longitude) => {
   const lat = parseFloat(latitude)
   const lng = parseFloat(longitude)
-  
+
   if (isNaN(lat) || isNaN(lng)) {
     console.error('Invalid coordinates provided')
     return false
   }
 
-  let destination = `${lat},${lng}`
-  if (label) {
-    destination = `${encodeURIComponent(label)}, ${lat},${lng}`
-  }
+  const destination = `${lat},${lng}`
 
   const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`
   window.open(url, '_blank')
@@ -66,15 +60,20 @@ export const getDirectionsToLocation = (latitude, longitude, label = '') => {
 
 /**
  * Copies location information to clipboard
- * @param {number} latitude 
- * @param {number} longitude 
- * @param {string} address 
- * @param {string} title 
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} address
+ * @param {string} title
  */
-export const copyLocationToClipboard = async (latitude, longitude, address = '', title = '') => {
+export const copyLocationToClipboard = async (
+  latitude,
+  longitude,
+  address = '',
+  title = ''
+) => {
   const lat = parseFloat(latitude)
   const lng = parseFloat(longitude)
-  
+
   if (isNaN(lat) || isNaN(lng)) {
     console.error('Invalid coordinates provided')
     return false
@@ -96,10 +95,10 @@ export const copyLocationToClipboard = async (latitude, longitude, address = '',
       document.body.appendChild(textArea)
       textArea.focus()
       textArea.select()
-      
+
       const success = document.execCommand('copy')
       document.body.removeChild(textArea)
-      
+
       return { success, method: 'execCommand' }
     }
   } catch (err) {
@@ -110,15 +109,20 @@ export const copyLocationToClipboard = async (latitude, longitude, address = '',
 
 /**
  * Shares location using Web Share API (mobile) or copies to clipboard
- * @param {number} latitude 
- * @param {number} longitude 
- * @param {string} title 
- * @param {string} address 
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {string} title
+ * @param {string} address
  */
-export const shareLocation = async (latitude, longitude, title = '', address = '') => {
+export const shareLocation = async (
+  latitude,
+  longitude,
+  title = '',
+  address = ''
+) => {
   const lat = parseFloat(latitude)
   const lng = parseFloat(longitude)
-  
+
   if (isNaN(lat) || isNaN(lng)) {
     console.error('Invalid coordinates provided')
     return { success: false, error: 'Invalid coordinates' }
@@ -193,35 +197,37 @@ export const getCurrentLocation = () => {
 
 /**
  * Calculates distance between two coordinates (in kilometers)
- * @param {number} lat1 
- * @param {number} lng1 
- * @param {number} lat2 
- * @param {number} lng2 
+ * @param {number} lat1
+ * @param {number} lng1
+ * @param {number} lat2
+ * @param {number} lng2
  * @returns {number} Distance in kilometers
  */
 export const calculateDistance = (lat1, lng1, lat2, lng2) => {
   const R = 6371 // Earth's radius in kilometers
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLng/2) * Math.sin(dLng/2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
 }
 
 /**
  * Formats coordinates for display
- * @param {number} latitude 
- * @param {number} longitude 
- * @param {number} precision 
+ * @param {number} latitude
+ * @param {number} longitude
+ * @param {number} precision
  * @returns {string} Formatted coordinates string
  */
 export const formatCoordinates = (latitude, longitude, precision = 6) => {
   const lat = parseFloat(latitude)
   const lng = parseFloat(longitude)
-  
+
   if (isNaN(lat) || isNaN(lng)) {
     return 'Invalid coordinates'
   }

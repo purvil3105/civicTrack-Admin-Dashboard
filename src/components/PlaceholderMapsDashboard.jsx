@@ -3,8 +3,8 @@ import { Box, Typography, Paper, Chip } from '@mui/material'
 import { LocationOn, Map } from '@mui/icons-material'
 
 const PlaceholderMapsDashboard = ({ reports = [] }) => {
-  const reportsWithLocation = reports.filter(report => 
-    report.latitude && report.longitude
+  const reportsWithLocation = reports.filter(
+    (report) => report.latitude && report.longitude
   )
 
   const getCategoryIcon = (category) => {
@@ -36,12 +36,12 @@ const PlaceholderMapsDashboard = ({ reports = [] }) => {
 
   return (
     <Box sx={{ height: 400, position: 'relative' }}>
-      <Paper 
-        sx={{ 
-          height: '100%', 
-          display: 'flex', 
+      <Paper
+        sx={{
+          height: '100%',
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
+          alignItems: 'center',
           justifyContent: 'center',
           bgcolor: 'grey.50',
           border: '2px dashed',
@@ -53,17 +53,30 @@ const PlaceholderMapsDashboard = ({ reports = [] }) => {
         <Typography variant="h6" color="text.secondary" gutterBottom>
           Interactive Map
         </Typography>
-        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          sx={{ mb: 3 }}
+        >
           Google Maps integration will display report locations here
         </Typography>
-        
+
         {reportsWithLocation.length > 0 && (
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="subtitle2" color="text.primary" gutterBottom>
               Reports with Location Data:
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', maxWidth: 400 }}>
-              {reportsWithLocation.slice(0, 5).map((report, index) => (
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 1,
+                justifyContent: 'center',
+                maxWidth: 400
+              }}
+            >
+              {reportsWithLocation.slice(0, 5).map((report) => (
                 <Chip
                   key={report.id}
                   label={`${getCategoryIcon(report.category)} ${report.title?.substring(0, 15)}...`}

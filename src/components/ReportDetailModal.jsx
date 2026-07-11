@@ -50,12 +50,12 @@ import {
 } from '@mui/icons-material'
 import { formatDistanceToNow, format } from 'date-fns'
 import InteractiveMap from './InteractiveMap'
-import { 
-  openInGoogleMaps, 
-  getDirectionsToLocation, 
-  shareLocation, 
+import {
+  openInGoogleMaps,
+  getDirectionsToLocation,
+  shareLocation,
   copyLocationToClipboard,
-  formatCoordinates 
+  formatCoordinates
 } from '../utils/locationUtils'
 
 const getStatusColor = (status) => {
@@ -80,13 +80,17 @@ const getCategoryIcon = (category) => {
     water_supply: '💧',
     cleanliness: '🧹',
     public_safety: '🛡️',
-    obstructions: '⚠️'
+    obstruction: '⚠️'
   }
   return iconMap[category] || '📋'
 }
 
 const LocationActions = memo(({ latitude, longitude, title, address }) => {
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  })
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity })
@@ -128,7 +132,12 @@ const LocationActions = memo(({ latitude, longitude, title, address }) => {
   }
 
   const handleCopyCoordinates = async () => {
-    const result = await copyLocationToClipboard(latitude, longitude, address, title)
+    const result = await copyLocationToClipboard(
+      latitude,
+      longitude,
+      address,
+      title
+    )
     if (result.success) {
       showSnackbar('Location details copied to clipboard!')
     } else {
@@ -137,7 +146,12 @@ const LocationActions = memo(({ latitude, longitude, title, address }) => {
   }
 
   // Don't render if no valid coordinates
-  if (!latitude || !longitude || isNaN(parseFloat(latitude)) || isNaN(parseFloat(longitude))) {
+  if (
+    !latitude ||
+    !longitude ||
+    isNaN(parseFloat(latitude)) ||
+    isNaN(parseFloat(longitude))
+  ) {
     return null
   }
 
@@ -147,43 +161,31 @@ const LocationActions = memo(({ latitude, longitude, title, address }) => {
         <Typography variant="subtitle2" gutterBottom>
           Location Actions:
         </Typography>
-        <ButtonGroup 
-          variant="outlined" 
-          size="small" 
+        <ButtonGroup
+          variant="outlined"
+          size="small"
           orientation="vertical"
           fullWidth
           sx={{ mb: 1 }}
         >
-          <Button
-            startIcon={<OpenInNewIcon />}
-            onClick={handleOpenInMaps}
-          >
+          <Button startIcon={<OpenInNewIcon />} onClick={handleOpenInMaps}>
             Open in Google Maps
           </Button>
-          <Button
-            startIcon={<DirectionsIcon />}
-            onClick={handleGetDirections}
-          >
+          <Button startIcon={<DirectionsIcon />} onClick={handleGetDirections}>
             Get Directions
           </Button>
         </ButtonGroup>
-        
-        <ButtonGroup 
-          variant="outlined" 
-          size="small" 
+
+        <ButtonGroup
+          variant="outlined"
+          size="small"
           orientation="vertical"
           fullWidth
         >
-          <Button
-            startIcon={<ShareIcon />}
-            onClick={handleShareLocation}
-          >
+          <Button startIcon={<ShareIcon />} onClick={handleShareLocation}>
             Share Location
           </Button>
-          <Button
-            startIcon={<CopyIcon />}
-            onClick={handleCopyCoordinates}
-          >
+          <Button startIcon={<CopyIcon />} onClick={handleCopyCoordinates}>
             Copy Details
           </Button>
         </ButtonGroup>
@@ -195,8 +197,8 @@ const LocationActions = memo(({ latitude, longitude, title, address }) => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
         >
@@ -254,21 +256,22 @@ const StatusDropdown = memo(({ report, onUpdateStatus }) => {
 const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
   if (!report) return null
 
-  const reportLocation = report.latitude && report.longitude 
-    ? [{ ...report }] 
-    : []
+  const reportLocation =
+    report.latitude && report.longitude ? [{ ...report }] : []
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="lg" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: { height: '90vh' }
       }}
     >
-      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <DialogTitle
+        sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+      >
         <Avatar sx={{ bgcolor: '#1976d2' }}>
           {getCategoryIcon(report.category)}
         </Avatar>
@@ -295,11 +298,13 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
       </DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-          height: '100%' 
-        }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            height: '100%'
+          }}
+        >
           {/* Left Panel - Report Details */}
           <Paper sx={{ p: 3, borderRadius: 0, height: 'fit-content' }}>
             {/* Basic Information */}
@@ -307,14 +312,14 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
               <Typography variant="h6" gutterBottom>
                 Report Details
               </Typography>
-              
+
               <List dense>
                 <ListItem sx={{ px: 0 }}>
                   <ListItemIcon>
                     <Category />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Category" 
+                  <ListItemText
+                    primary="Category"
                     secondary={report.category.replace('_', ' ').toUpperCase()}
                   />
                 </ListItem>
@@ -323,31 +328,32 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
                   <ListItemIcon>
                     <Schedule />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary="Reported" 
+                  <ListItemText
+                    primary="Reported"
                     secondary={`${format(new Date(report.created_at), 'PPp')} (${formatDistanceToNow(new Date(report.created_at), { addSuffix: true })})`}
                   />
                 </ListItem>
 
-                {report.updated_at && report.updated_at !== report.created_at && (
-                  <ListItem sx={{ px: 0 }}>
-                    <ListItemIcon>
-                      <Schedule />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Last Updated" 
-                      secondary={`${format(new Date(report.updated_at), 'PPp')} (${formatDistanceToNow(new Date(report.updated_at), { addSuffix: true })})`}
-                    />
-                  </ListItem>
-                )}
+                {report.updated_at &&
+                  report.updated_at !== report.created_at && (
+                    <ListItem sx={{ px: 0 }}>
+                      <ListItemIcon>
+                        <Schedule />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary="Last Updated"
+                        secondary={`${format(new Date(report.updated_at), 'PPp')} (${formatDistanceToNow(new Date(report.updated_at), { addSuffix: true })})`}
+                      />
+                    </ListItem>
+                  )}
 
                 {report.user_id && (
                   <ListItem sx={{ px: 0 }}>
                     <ListItemIcon>
                       <Person />
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="Reported By" 
+                    <ListItemText
+                      primary="Reported By"
                       secondary={`User ID: ${report.user_id}`}
                     />
                   </ListItem>
@@ -358,8 +364,8 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
                     <ListItemIcon>
                       <LocationOn />
                     </ListItemIcon>
-                    <ListItemText 
-                      primary="Location" 
+                    <ListItemText
+                      primary="Location"
                       secondary={report.address}
                     />
                   </ListItem>
@@ -374,14 +380,17 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
               <Typography variant="h6" gutterBottom>
                 Description
               </Typography>
-              <Typography variant="body2" sx={{ 
-                lineHeight: 1.6,
-                p: 2, 
-                bgcolor: 'grey.50', 
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'grey.200'
-              }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  lineHeight: 1.6,
+                  p: 2,
+                  bgcolor: 'grey.50',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'grey.200'
+                }}
+              >
                 {report.description || 'No description provided'}
               </Typography>
             </Box>
@@ -399,7 +408,7 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
                       component="img"
                       image={report.image_url}
                       alt="Report attachment"
-                      sx={{ 
+                      sx={{
                         height: 250,
                         objectFit: 'cover',
                         cursor: 'pointer'
@@ -417,21 +426,30 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
             <Typography variant="h6" gutterBottom>
               Location on Map
             </Typography>
-            
+
             {reportLocation.length > 0 ? (
-              <Box sx={{ height: 400, border: '1px solid', borderColor: 'grey.300', borderRadius: 1 }}>
+              <Box
+                sx={{
+                  height: 400,
+                  border: '1px solid',
+                  borderColor: 'grey.300',
+                  borderRadius: 1
+                }}
+              >
                 <InteractiveMap reports={reportLocation} height={400} />
               </Box>
             ) : (
-              <Paper sx={{ 
-                height: 400, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                bgcolor: 'grey.50',
-                border: '2px dashed',
-                borderColor: 'grey.300'
-              }}>
+              <Paper
+                sx={{
+                  height: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'grey.50',
+                  border: '2px dashed',
+                  borderColor: 'grey.300'
+                }}
+              >
                 <Box sx={{ textAlign: 'center' }}>
                   <LocationOn sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
                   <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -453,11 +471,15 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   {formatCoordinates(report.latitude, report.longitude)}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', mb: 1 }}
+                >
                   Lat: {report.latitude} | Lng: {report.longitude}
                 </Typography>
-                
-                <LocationActions 
+
+                <LocationActions
                   latitude={report.latitude}
                   longitude={report.longitude}
                   title={report.title}
@@ -470,14 +492,9 @@ const ReportDetailModal = ({ open, report, onClose, onUpdateStatus }) => {
       </DialogContent>
 
       <DialogActions sx={{ p: 3, justifyContent: 'space-between' }}>
-        <Button onClick={onClose}>
-          Close
-        </Button>
-        
-        <StatusDropdown 
-          report={report} 
-          onUpdateStatus={onUpdateStatus}
-        />
+        <Button onClick={onClose}>Close</Button>
+
+        <StatusDropdown report={report} onUpdateStatus={onUpdateStatus} />
       </DialogActions>
     </Dialog>
   )

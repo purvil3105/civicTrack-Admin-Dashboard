@@ -1,5 +1,5 @@
 import { Wrapper, Status } from '@googlemaps/react-wrapper'
-import { useRef, useEffect, useState } from 'react'
+
 import { Box, CircularProgress, Alert } from '@mui/material'
 
 const GoogleMapsWrapper = ({ children, ...props }) => {
@@ -8,7 +8,8 @@ const GoogleMapsWrapper = ({ children, ...props }) => {
   if (!apiKey) {
     return (
       <Alert severity="error">
-        Google Maps API key is not configured. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.
+        Google Maps API key is not configured. Please add
+        VITE_GOOGLE_MAPS_API_KEY to your .env file.
       </Alert>
     )
   }
@@ -17,10 +18,10 @@ const GoogleMapsWrapper = ({ children, ...props }) => {
     switch (status) {
       case Status.LOADING:
         return (
-          <Box 
-            display="flex" 
-            justifyContent="center" 
-            alignItems="center" 
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
             height="400px"
           >
             <CircularProgress />
@@ -29,7 +30,8 @@ const GoogleMapsWrapper = ({ children, ...props }) => {
       case Status.FAILURE:
         return (
           <Alert severity="error">
-            Failed to load Google Maps. Please check your API key and internet connection.
+            Failed to load Google Maps. Please check your API key and internet
+            connection.
           </Alert>
         )
       case Status.SUCCESS:
@@ -40,8 +42,8 @@ const GoogleMapsWrapper = ({ children, ...props }) => {
   }
 
   return (
-    <Wrapper 
-      apiKey={apiKey} 
+    <Wrapper
+      apiKey={apiKey}
       render={render}
       libraries={['places', 'geometry']}
       {...props}

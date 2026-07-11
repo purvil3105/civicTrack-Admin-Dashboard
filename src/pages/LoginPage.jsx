@@ -13,12 +13,7 @@ import {
   Divider,
   CircularProgress
 } from '@mui/material'
-import {
-  Visibility,
-  VisibilityOff,
-  Email,
-  Lock
-} from '@mui/icons-material'
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material'
 import { useAuth } from '../contexts/AuthContext'
 
 const LoginPage = () => {
@@ -49,7 +44,7 @@ const LoginPage = () => {
       if (error) {
         setError(error.message)
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
@@ -75,7 +70,8 @@ const LoginPage = () => {
         sx={{
           maxWidth: 400,
           width: '100%',
-          boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+          boxShadow:
+            '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
         }}
       >
         <CardContent sx={{ p: 4 }}>
@@ -195,10 +191,14 @@ const LoginPage = () => {
           </form>
 
           {/* Demo credentials hint */}
-          <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0,0,0,0.03)', borderRadius: 1 }}>
+          <Box
+            sx={{ mt: 3, p: 2, bgcolor: 'rgba(0,0,0,0.03)', borderRadius: 1 }}
+          >
             <Typography variant="body2" color="textSecondary" align="center">
-              <strong>Demo Credentials:</strong><br />
-              Email: admin@issue.com<br />
+              <strong>Demo Credentials:</strong>
+              <br />
+              Email: admin@issue.com
+              <br />
               Password: admin123
             </Typography>
           </Box>

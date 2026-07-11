@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   Box,
   Container,
   Paper,
   Typography,
   LinearProgress,
-  Alert
+  Alert,
+  Skeleton
 } from '@mui/material'
 import {
   TrendingUp,
@@ -22,9 +23,9 @@ import CategoryDistribution from '../components/CategoryDistribution'
 import InteractiveMap from '../components/InteractiveMap'
 // import CleanupManagement from '../components/CleanupManagement' // Disabled for now
 
-const dashboardPage = () => {
+const DashboardPage = () => {
   const { reports, loading, error } = useReports()
-  
+
   // Memoize stats calculation to prevent unnecessary recalculations
   const stats = useMemo(() => {
     if (!reports || reports.length === 0) {
@@ -39,10 +40,10 @@ const dashboardPage = () => {
 
     return {
       total: reports.length,
-      pending: reports.filter(r => r.status === 'pending').length,
-      inProgress: reports.filter(r => r.status === 'in_progress').length,
-      resolved: reports.filter(r => r.status === 'resolved').length,
-      rejected: reports.filter(r => r.status === 'rejected').length
+      pending: reports.filter((r) => r.status === 'pending').length,
+      inProgress: reports.filter((r) => r.status === 'in_progress').length,
+      resolved: reports.filter((r) => r.status === 'resolved').length,
+      rejected: reports.filter((r) => r.status === 'rejected').length
     }
   }, [reports])
 
@@ -53,12 +54,52 @@ const dashboardPage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', mt: 2 }}>
-        <LinearProgress />
-        <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
-          Loading dashboard data...
-        </Typography>
-      </Box>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ mb: 4 }}>
+          <Skeleton variant="text" width={300} height={50} />
+          <Skeleton variant="text" width={400} />
+        </Box>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(4, 1fr)'
+            },
+            gap: 3,
+            mb: 4
+          }}
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} variant="rounded" height={120} />
+          ))}
+        </Box>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 3,
+            mb: 4
+          }}
+        >
+          <Skeleton variant="rounded" height={350} />
+          <Skeleton variant="rounded" height={350} />
+        </Box>
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 3
+          }}
+        >
+          <Skeleton variant="rounded" height={400} />
+          <Skeleton variant="rounded" height={400} />
+        </Box>
+      </Container>
     )
   }
 
@@ -75,7 +116,12 @@ const dashboardPage = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ color: '#1976d2' }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ color: '#1976d2' }}
+        >
           IssueSpotter Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -84,16 +130,16 @@ const dashboardPage = () => {
       </Box>
 
       {/* Stats Cards */}
-      <Box 
-        sx={{ 
-          display: 'grid', 
+      <Box
+        sx={{
+          display: 'grid',
           gridTemplateColumns: {
             xs: '1fr',
             sm: 'repeat(2, 1fr)',
             md: 'repeat(4, 1fr)'
           },
           gap: 3,
-          mb: 4 
+          mb: 4
         }}
       >
         <StatsCard
@@ -127,15 +173,15 @@ const dashboardPage = () => {
       </Box>
 
       {/* Charts and Analytics */}
-      <Box 
-        sx={{ 
-          display: 'grid', 
+      <Box
+        sx={{
+          display: 'grid',
           gridTemplateColumns: {
             xs: '1fr',
             lg: '2fr 1fr'
           },
           gap: 3,
-          mb: 4 
+          mb: 4
         }}
       >
         <Paper sx={{ p: 3 }}>
@@ -153,21 +199,24 @@ const dashboardPage = () => {
       </Box>
 
       {/* Maps and Recent Reports */}
-      <Box 
-        sx={{ 
-          display: 'grid', 
+      <Box
+        sx={{
+          display: 'grid',
           gridTemplateColumns: {
             xs: '1fr',
             lg: '2fr 1fr'
           },
-          gap: 3 
+          gap: 3
         }}
       >
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Report Locations
           </Typography>
-          <InteractiveMap reports={reports?.filter(r => r.latitude && r.longitude) || []} height={300} />
+          <InteractiveMap
+            reports={reports?.filter((r) => r.latitude && r.longitude) || []}
+            height={300}
+          />
         </Paper>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
@@ -190,4 +239,4 @@ const dashboardPage = () => {
   )
 }
 
-export default dashboardPage
+export default DashboardPage
